@@ -1,0 +1,164 @@
+/* Loginform.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9f9fb;
+}
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-box {
+  background: #fff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.logo {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+h2 {
+  margin-bottom: 4px;
+}
+
+p {
+  color: #555;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 8px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.social-btn:hover {
+  background: #f1f1f1;
+}
+
+.google img,
+.facebook img {
+  height: 18px;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 20px 0;
+  color: #999;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  height: 1px;
+  width: 40%;
+  background: #ccc;
+  position: absolute;
+  top: 50%;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.login-form {
+  text-align: left;
+}
+
+.login-form label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.password-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forgot-link {
+  font-size: 13px;
+  color: #4a4ad4;
+  text-decoration: none;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper input {
+  padding-right: 36px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 9px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.email-login-btn {
+  width: 100%;
+  background: #111;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.3s ease;
+}
+
+.email-login-btn:hover {
+  background: #000;
+}
+
+.signup-prompt {
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.signup-prompt a {
+  color: #4a4ad4;
+  text-decoration: none;
+  font-weight: bold;
+}
