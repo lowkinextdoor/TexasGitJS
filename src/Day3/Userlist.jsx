@@ -1,15 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 
-/**
- * User.jsx – clean, self‑contained user list with:
- *   • Search (name & username)
- *   • Column sorting (including nested props like address.city)
- *   • Client‑side pagination (5 per page)
- *   • JSON export/import with validation
- */
-export default function User() {
-  const [users, setUsers] = useState([]); // master list
-  const [displayedUsers, setDisplayedUsers] = useState([]); // filtered / sorted view
+export default function Userlist() {
+  const [users, setUsers] = useState([]);
+  const [displayedUsers, setDisplayedUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState("id");
   const [sortAsc, setSortAsc] = useState(true);
@@ -24,99 +17,74 @@ export default function User() {
         setUsers(data);
         setDisplayedUsers(data);
       })
-      .catch(console.error);
+      .catch((err) => console.error(err));
   }, []);
-
-  const getNested = (obj, path) =>
-    path.split(".").reduce((o, key) => (o ? o[key] : undefined), obj);
-
-  const compareBy = (key, asc) => (a, b) => {
-    const aVal = getNested(a, key)?.toString().toLowerCase() ?? "";
-    const bVal = getNested(b, key)?.toString().toLowerCase() ?? "";
-    if (aVal < bVal) return asc ? -1 : 1;
-    if (aVal > bVal) return asc ? 1 : -1;
-    return 0;
-  };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearch(value);
     const filtered = users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(value) ||
-        u.username.toLowerCase().includes(value)
+      (user) =>
+        user.name.toLowerCase().includes(value) ||
+        user.username.toLowerCase().includes(value)
     );
     setDisplayedUsers(filtered);
-    setPage(1);
+    setPage(1); // Reset page on search
   };
 
   const handleSort = (key) => {
     const asc = key === sortKey ? !sortAsc : true;
-    const sorted = [...displayedUsers].sort(compareBy(key, asc));
+    const sorted = [...displayedUsers].sort((a, b) => {
+      const aVal = a[key]?.toString().toLowerCase();
+      const bVal = b[key]?.toString().toLowerCase();
+      return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
     setSortKey(key);
     setSortAsc(asc);
     setDisplayedUsers(sorted);
   };
 
   const handleExport = () => {
-    const json = JSON.stringify(users, null, 2);
+    const json = JSON.stringify(displayedUsers, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = "users.json";
+    a.download = "userlist.json";
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const handleImport = (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = (e) => {
       try {
-        const data = JSON.parse(evt.target.result);
-        if (Array.isArray(data)) {
-          setUsers(data);
-          setDisplayedUsers(data);
-        } else if (Array.isArray(data.users)) {
-          setUsers(data.users);
-          setDisplayedUsers(data.users);
-        } else {
-          throw new Error("Imported JSON must be an array or { users: [...] }");
-        }
+        const data = JSON.parse(e.target.result);
+        setUsers(data);
+        setDisplayedUsers(data);
         setSearch("");
         setPage(1);
-      } catch (err) {
-        alert(err.message || "Invalid JSON file");
+      } catch {
+        alert("Invalid JSON file");
       }
     };
     reader.readAsText(file);
   };
 
   const startIndex = (page - 1) * itemsPerPage;
-  const paginated = Array.isArray(displayedUsers)
-    ? displayedUsers.slice(startIndex, startIndex + itemsPerPage)
-    : [];
-  const totalPages = Math.max(1, Math.ceil((Array.isArray(displayedUsers) ? displayedUsers.length : 0) / itemsPerPage));
-
-  const columns = [
-    { key: "id", label: "ID" },
-    { key: "name", label: "Name" },
-    { key: "username", label: "Username" },
-    { key: "email", label: "Email" },
-    { key: "phone", label: "Phone" },
-    { key: "address.city", label: "City" },
-    { key: "website", label: "Website" },
-    { key: "company.name", label: "Company" },
-  ];
+  const paginated = displayedUsers.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.ceil(displayedUsers.length / itemsPerPage);
 
   return (
     <div style={styles.wrapper}>
       <div style={styles.card}>
         <h2 style={styles.title}>📋 User List</h2>
 
+        {/* Search bar */}
         <input
           type="text"
           value={search}
@@ -125,9 +93,10 @@ export default function User() {
           style={styles.input}
         />
 
+        {/* Export/Import */}
         <div style={styles.actions}>
           <button style={styles.button} onClick={handleExport}>⬇️ Export</button>
-          <button style={styles.button} onClick={() => fileInputRef.current?.click()}>⬆️ Import</button>
+          <button style={styles.button} onClick={() => fileInputRef.current.click()}>⬆️ Import</button>
           <input
             type="file"
             ref={fileInputRef}
@@ -137,32 +106,42 @@ export default function User() {
           />
         </div>
 
+        {/* Table */}
         <table style={styles.table}>
           <thead>
             <tr>
-              {columns.map(({ key, label }) => (
-                <th key={key} onClick={() => handleSort(key)} style={styles.th}>
-                  {label} {sortKey === key && (sortAsc ? "▲" : "▼")}
-                </th>
-              ))}
+              {["id", "name", "username", "email", "phone", "address.city", "website", "company.name"].map((key, idx) => {
+                const label = key.includes(".") ? key.split(".")[0] : key;
+                return (
+                  <th
+                    key={idx}
+                    onClick={() => handleSort(key.includes(".") ? key.split(".")[0] : key)}
+                    style={styles.th}
+                  >
+                    {label.charAt(0).toUpperCase() + label.slice(1)}{" "}
+                    {sortKey === label && (sortAsc ? "▲" : "▼")}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {paginated.map((u) => (
-              <tr key={u.id}>
-                <td style={styles.td}>{u.id}</td>
-                <td style={styles.td}>{u.name}</td>
-                <td style={styles.td}>{u.username}</td>
-                <td style={styles.td}>{u.email}</td>
-                <td style={styles.td}>{u.phone}</td>
-                <td style={styles.td}>{u.address?.city}</td>
-                <td style={styles.td}>{u.website}</td>
-                <td style={styles.td}>{u.company?.name}</td>
+            {paginated.map((user) => (
+              <tr key={user.id}>
+                <td style={styles.td}>{user.id}</td>
+                <td style={styles.td}>{user.name}</td>
+                <td style={styles.td}>{user.username}</td>
+                <td style={styles.td}>{user.email}</td>
+                <td style={styles.td}>{user.phone}</td>
+                <td style={styles.td}>{user.address.city}</td>
+                <td style={styles.td}>{user.website}</td>
+                <td style={styles.td}>{user.company.name}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
+        {/* Pagination */}
         <div style={styles.pagination}>
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
@@ -219,7 +198,7 @@ const styles = {
   },
   actions: {
     display: "flex",
-    gap: 10,
+    gap: "10px",
     marginBottom: 20,
   },
   button: {
@@ -229,7 +208,7 @@ const styles = {
     color: "#fff",
     border: "none",
     cursor: "pointer",
-    fontWeight: 600,
+    fontWeight: "600",
   },
   table: {
     width: "100%",
@@ -237,16 +216,15 @@ const styles = {
     textAlign: "left",
   },
   th: {
-    padding: 12,
+    padding: "12px",
     backgroundColor: "#f0f0f0",
-    fontWeight: 600,
+    fontWeight: "600",
     borderBottom: "2px solid #ddd",
     color: "#222",
     cursor: "pointer",
-    userSelect: "none",
   },
   td: {
-    padding: 12,
+    padding: "12px",
     borderBottom: "1px solid #eee",
     color: "#333",
     fontSize: 15,
@@ -264,11 +242,11 @@ const styles = {
     color: "#fff",
     border: "none",
     cursor: "pointer",
-    fontWeight: 600,
+    fontWeight: "600",
   },
   pageText: {
     fontSize: 16,
-    fontWeight: 500,
+    fontWeight: "500",
     color: "#555",
   },
 };

@@ -1,11 +1,11 @@
 import "./App.css";
 import React from 'react';
-import Focusinput from "./Day5/Focusinput"
+import Path from "./Path"
 
 
 function App(){
   return <><div className="App"></div><div className="App">
-    <Focusinput/>
+     <Path/>
   </div></>
 }
 
